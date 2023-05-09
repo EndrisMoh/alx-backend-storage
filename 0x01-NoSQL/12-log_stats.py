@@ -14,7 +14,7 @@ from pymongo import MongoClient
 
 
 def print_nginx_request_logs(nginx_collection):
-    '''Prints stats about Nginx request logs.
+    '''Returns stats about Nginx request logs.
     '''
     print('{} logs'.format(nginx_collection.count_documents({})))
     print('Methods:')
