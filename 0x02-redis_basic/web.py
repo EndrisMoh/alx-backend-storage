@@ -3,29 +3,35 @@
 import redis
 import requests
 from functools import wraps
-from typing import Callable, Any
-
-r = redis.Redis()
+from typing import Callable
 
 
-def tracker(method: Callable) -> Callable:
-    """ Track and cache the result with an expiration time """
+redis_store = redis.Redis()
+'''The module-level Redis instance.
+'''
+
+
+def data_cacher(method: Callable) -> Callable:
+    '''Caches the output of fetched data.
+    '''
     @wraps(method)
-    def wrapper(url) -> Any:
-        """ Wrapper method """
-        count = f'count:{url}'
-        cache = f'cached:{url}'
+    def invoker(url) -> str:
+        '''The wrapper function for caching the output.
+        '''
+        redis_store.incr(f'count:{url}')
+        result = redis_store.get(f'result:{url}')
+        if result:
+            return result.decode('utf-8')
+        result = method(url)
+        redis_store.set(f'count:{url}', 0)
+        redis_store.setex(f'result:{url}', 10, result)
+        return result
+    return invoker
 
-        r.incr(count)
-        r.expire(cache, 10)
 
-        return method(url)
-
-    return wrapper
-
-
-@tracker
+@data_cacher
 def get_page(url: str) -> str:
-    """ Track how many times a particular URL was accessed """
-    response = requests.get(url)
-    return response.text
+    '''Returns the content of a URL after caching the request's response,
+    and tracking the request.
+    '''
+    return requests.get(url).text
