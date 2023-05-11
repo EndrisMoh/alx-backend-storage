@@ -2,16 +2,16 @@
 """ Implementing an expiring web cache and tracker """
 import redis
 import requests
-rc = redis.Redis()
+redc = redis.Redis()
 count = 0
 
 
 def get_page(url: str) -> str:
-    """ get a page and cach value"""
-    rc.set(f"cached:{url}", count)
+    """ Get a page and cache value"""
+    redc.set(f"cached:{url}", count)
     resp = requests.get(url)
-    rc.incr(f"count:{url}")
-    rc.setex(f"cached:{url}", 10, rc.get(f"cached:{url}"))
+    redc.incr(f"count:{url}")
+    redc.setex(f"cached:{url}", 10, redc.get(f"cached:{url}"))
     return resp.text
 
 
