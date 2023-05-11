@@ -7,7 +7,7 @@ count = 0
 
 
 def get_page(url: str) -> str:
-    """ Get a page and cache value"""
+    """ Get a page and cache the value"""
     redc.set(f"cached:{url}", count)
     resp = requests.get(url)
     redc.incr(f"count:{url}")
